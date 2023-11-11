@@ -1,0 +1,62 @@
+wget https://d28rh4a8wq0iu5.cloudfront.net/bioinfo/SRR292678sub_S1_L001_R1_001.fastq.gz
+wget https://d28rh4a8wq0iu5.cloudfront.net/bioinfo/SRR292678sub_S1_L001_R2_001.fastq.gz
+wget https://d28rh4a8wq0iu5.cloudfront.net/bioinfo/SRR292862_S2_L001_R1_001.fastq.gz
+wget https://d28rh4a8wq0iu5.cloudfront.net/bioinfo/SRR292862_S2_L001_R2_001.fastq.gz
+wget https://d28rh4a8wq0iu5.cloudfront.net/bioinfo/SRR292770_S1_L001_R1_001.fastq.gz
+wget https://d28rh4a8wq0iu5.cloudfront.net/bioinfo/SRR292770_S1_L001_R2_001.fastq.gz
+gunzip *
+
+mkdir quality
+fastqc -o quality *
+
+mkdir kmers
+
+jellyfish count -m 31 -s 5000000 -C -o kmers/output.jf SRR292678sub_S1_L001_R1_001.fastq SRR292678sub_S1_L001_R2_001.fastq
+
+cd kmers
+jellyfish histo output.jf > histogram.txt
+
+N = 125 * 90 / ( 90 - 31 + 1 ) = 187.5
+genome_size = 2 * 5499346 * 90 / 187.5 ~ 5.28 Mbp
+
+
+QUAST report
+
+All statistics are based on contigs of size >= 500 bp, unless otherwise noted (e.g., "# contigs (>= 0 bp)" and "Total length (>= 0 bp)" include all contigs).
+
+Assembly                    bad_contigs  bad_scaffolds  contigs   scaffolds
+# contigs (>= 0 bp)         386          372            369       327      
+# contigs (>= 1000 bp)      159          158            79        54       
+# contigs (>= 5000 bp)      81           82             33        16       
+# contigs (>= 10000 bp)     67           67             30        13       
+# contigs (>= 25000 bp)     50           50             26        10       
+# contigs (>= 50000 bp)     32           32             22        10       
+Total length (>= 0 bp)      5334575      5336365        5403327   5437160  
+Total length (>= 1000 bp)   5259101      5259608        5331230   5365719  
+Total length (>= 5000 bp)   5076685      5081904        5202939   5258076  
+Total length (>= 10000 bp)  4977737      4977737        5183802   5238939  
+Total length (>= 25000 bp)  4714504      4714504        5133691   5200270  
+Total length (>= 50000 bp)  4035821      4035821        4975501   5200270  
+# contigs                   210          221            105       90       
+Largest contig              300763       300763         698474    2815616  
+Total length                5295721      5304595        5350156   5391554  
+GC (%)                      50.56        50.53          50.59     50.57    
+N50                         111860       111860         335515    2815616  
+N90                         18506        18506          79998     180369   
+auN                         131921.2     131704.5       319603.4  1633387.0
+L50                         14           14             6         1        
+L90                         53           53             20        7        
+# N's per 100 kbp           0.00         33.74          0.00      627.52   
+
+
+prokka scaffolds.fasta
+
+barrnap --outseq 16s.fasta < scaffolds.fasta > scaffolds.gff
+
+
+16s.fasta --BLAST--> 55989.fasta
+( Escherichia coli 55989, complete sequence
+NCBI Reference Sequence: NC_011748.1 )
+
+55989.fasta, scaffolds.gbk ----> Mauve
+search "shiga" --> some_phage -- Shiga toxin II subB + subA -- some_phage
